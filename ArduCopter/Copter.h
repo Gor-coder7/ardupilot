@@ -48,6 +48,7 @@
 #include <AC_AttitudeControl/AC_CommandModel.h>                 // Command model library
 #include <AP_Motors/AP_Motors.h>            // AP Motors library
 #include <Filter/Filter.h>                  // Filter library
+#include <PID/PID.h>
 #include <AP_Vehicle/AP_Vehicle.h>          // needed for AHRS build
 #include <AP_InertialNav/AP_InertialNav.h>  // inertial navigation library
 #include <AC_WPNav/AC_WPNav.h>              // ArduCopter waypoint navigation library
@@ -227,7 +228,7 @@ public:
     friend class ModeZigZag;
     friend class ModeAutorotate;
     friend class ModeTurtle;
-
+    friend class ModeNewMode;
     friend class _AutoTakeoff;
 
     friend class PayloadPlace;
@@ -1106,7 +1107,7 @@ private:
 #if MODE_TURTLE_ENABLED
     ModeTurtle mode_turtle;
 #endif
-
+    ModeNewMode mode_newmode;
     // mode.cpp
     Mode *mode_from_mode_num(const Mode::Number mode);
     void exit_mode(Mode *&old_flightmode, Mode *&new_flightmode);

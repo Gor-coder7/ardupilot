@@ -100,7 +100,7 @@ public:
         AUTOROTATE =   26,  // Autonomous autorotation
         AUTO_RTL =     27,  // Auto RTL, this is not a true mode, AUTO will report as this mode if entered to perform a DO_LAND_START Landing sequence
         TURTLE =       28,  // Flip over after crash
-
+        NEWMODE = 29,
         // Mode number 30 reserved for "offboard" for external/lua control.
 
         // Mode number 127 reserved for the "drone show mode" in the Skybrush
@@ -1641,6 +1641,25 @@ private:
 
 };
 
+class ModeNewMode : public Mode {
+public:
+    using Mode::Mode;
+    Number mode_number() const override { return Number::NEWMODE; }
+    bool init(bool ignore_checks) override;
+    void run() override;
+    
+    bool requires_GPS() const override { return false; }
+    bool has_manual_throttle() const override { return true; }
+    bool allows_arming(AP_Arming::Method method) const override { return true; };
+    bool is_autopilot() const override { return false; }
+    
+    protected:
+    const char *name() const override { return "NEWMODE"; }
+    const char *name4() const override { return "NEWM"; }
+    
+private:
+    
+};
 
 class ModeStabilize : public Mode {
 
