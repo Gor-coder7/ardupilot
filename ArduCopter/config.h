@@ -178,6 +178,10 @@
 # define MODE_GUIDED_ENABLED 1
 #endif
 
+#ifndef MODE_HITTARGET_ENABLED
+# define MODE_HITTARGET_ENABLED 1
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 // GuidedNoGPS mode - control vehicle's angles from GCS
 #ifndef MODE_GUIDED_NOGPS_ENABLED

@@ -647,7 +647,12 @@ public:
 #endif
 
     AP_Float fs_gcs_timeout;
+///////////
+#if MODE_HITTARGET_ENABLED
+    AP_Int32 hit_target_options;
+#endif
 
+    AP_Float fs_gcs_timeout;
 #if MODE_RTL_ENABLED
     AP_Int32 rtl_options;
 #endif
