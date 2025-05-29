@@ -328,9 +328,39 @@ struct PACKED log_Guided_Position_Target {
     float accel_target_y;
     float accel_target_z;
 };
+///////////////////////////////
+struct PACKED log_Hit_Target_Position_Target {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    uint8_t type;
+    float pos_target_x;
+    float pos_target_y;
+    float pos_target_z;
+    uint8_t terrain;
+    float vel_target_x;
+    float vel_target_y;
+    float vel_target_z;
+    float accel_target_x;
+    float accel_target_y;
+    float accel_target_z;
+};
 
 // guided attitude target logging
 struct PACKED log_Guided_Attitude_Target {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    uint8_t type;
+    float roll;
+    float pitch;
+    float yaw;
+    float roll_rate;
+    float pitch_rate;
+    float yaw_rate;
+    float thrust;
+    float climb_rate;
+};
+///////////////////////////////////////
+struct PACKED log_Hit_Target_Attitude_Target {
     LOG_PACKET_HEADER;
     uint64_t time_us;
     uint8_t type;
@@ -377,6 +407,26 @@ void Copter::Log_Write_Guided_Position_Target(ModeGuided::SubMode target_type, c
     };
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
+/////////////////////////////////////////////////////////////
+void Copter::Log_Write_Hit_Target_Position_Target(ModeHitTarget::SubMode target_type, const Vector3f& pos_target, bool terrain_alt, const Vector3f& vel_target, const Vector3f& accel_target)
+{
+    const log_Hit_Target_Position_Target pkt {
+        LOG_PACKET_HEADER_INIT(LOG_HITTARGET_POSITION_TARGET_MSG),
+        time_us         : AP_HAL::micros64(),
+        type            : (uint8_t)target_type,
+        pos_target_x    : pos_target.x,
+        pos_target_y    : pos_target.y,
+        pos_target_z    : pos_target.z,
+        terrain         : terrain_alt,
+        vel_target_x    : vel_target.x,
+        vel_target_y    : vel_target.y,
+        vel_target_z    : vel_target.z,
+        accel_target_x  : accel_target.x,
+        accel_target_y  : accel_target.y,
+        accel_target_z  : accel_target.z
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
 
 // Write a Guided mode attitude target
 // roll, pitch and yaw are in radians
@@ -387,6 +437,24 @@ void Copter::Log_Write_Guided_Attitude_Target(ModeGuided::SubMode target_type, f
 {
     const log_Guided_Attitude_Target pkt {
         LOG_PACKET_HEADER_INIT(LOG_GUIDED_ATTITUDE_TARGET_MSG),
+        time_us         : AP_HAL::micros64(),
+        type            : (uint8_t)target_type,
+        roll            : degrees(roll),       // rad to deg
+        pitch           : degrees(pitch),      // rad to deg
+        yaw             : degrees(yaw),        // rad to deg
+        roll_rate       : degrees(ang_vel.x),  // rad/s to deg/s
+        pitch_rate      : degrees(ang_vel.y),  // rad/s to deg/s
+        yaw_rate        : degrees(ang_vel.z),  // rad/s to deg/s
+        thrust          : thrust,
+        climb_rate      : climb_rate
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
+//////////////////////////////////////////////////
+void Copter::Log_Write_Hit_Target_Attitude_Target(ModeHitTarget::SubMode target_type, float roll, float pitch, float yaw, const Vector3f &ang_vel, float thrust, float climb_rate)
+{
+    const log_Hit_Target_Attitude_Target pkt {
+        LOG_PACKET_HEADER_INIT(LOG_HITTARGET_ATTITUDE_TARGET_MSG),
         time_us         : AP_HAL::micros64(),
         type            : (uint8_t)target_type,
         roll            : degrees(roll),       // rad to deg
@@ -556,6 +624,35 @@ const struct LogStructure Copter::log_structure[] = {
 // @Field: ClimbRt: Climb rate
 
     { LOG_GUIDED_ATTITUDE_TARGET_MSG, sizeof(log_Guided_Attitude_Target),
+      "GUIA",  "QBffffffff",    "TimeUS,Type,Roll,Pitch,Yaw,RollRt,PitchRt,YawRt,Thrust,ClimbRt", "s-dddkkk-n", "F-000000-0" , true },
+
+// @LoggerMessage: RTDT
+// @Description: Attitude controller time deltas
+// @Field: TimeUS: Time since system startup
+// @Field: dt: current time delta
+// @Field: dtAvg: current time delta average
+// @Field: dtMax: Max time delta since last log output
+// @Field: dtMin: Min time delta since last log output
+
+///////////////////////////////////
+    
+{ LOG_HITTARGET_POSITION_TARGET_MSG, sizeof(log_Hit_Target_Position_Target),
+      "GUIP",  "QBfffbffffff",    "TimeUS,Type,pX,pY,pZ,Terrain,vX,vY,vZ,aX,aY,aZ", "s-mmm-nnnooo", "F-BBB-BBBBBB" , true },
+
+// @LoggerMessage: GUIA
+// @Description: HitTarget mode attitude target information
+// @Field: TimeUS: Time since system startup
+// @Field: Type: Type of hittarget mode
+// @Field: Roll: Target attitude, Roll
+// @Field: Pitch: Target attitude, Pitch
+// @Field: Yaw: Target attitude, Yaw
+// @Field: RollRt: Roll rate
+// @Field: PitchRt: Pitch rate
+// @Field: YawRt: Yaw rate
+// @Field: Thrust: Thrust 
+// @Field: ClimbRt: Climb rate
+
+    { LOG_HITTARGET_ATTITUDE_TARGET_MSG, sizeof(log_Hit_Target_Attitude_Target),
       "GUIA",  "QBffffffff",    "TimeUS,Type,Roll,Pitch,Yaw,RollRt,PitchRt,YawRt,Thrust,ClimbRt", "s-dddkkk-n", "F-000000-0" , true },
 
 // @LoggerMessage: RTDT

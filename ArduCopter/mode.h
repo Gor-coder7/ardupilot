@@ -1081,7 +1081,7 @@ public:
     // Return true if the throttle high arming check can be skipped when arming from GCS or Scripting
     bool allows_GCS_or_SCR_arming_with_throttle_high() const override { return true; }
 
-    // Sets guided's angular target submode: Using a rotation quaternion, angular velocity, and climbrate or thrust (depends on user option)
+    // Sets hittarget's angular target submode: Using a rotation quaternion, angular velocity, and climbrate or thrust (depends on user option)
     // attitude_quat: IF zero: ang_vel (angular velocity) must be provided even if all zeroes
     //                IF non-zero: attitude_control is performed using both the attitude quaternion and angular velocity
     // ang_vel: angular velocity (rad/s)
@@ -1104,7 +1104,7 @@ public:
     const Vector3f& get_target_vel() const;
     const Vector3f& get_target_accel() const;
     
-    // returns true if GUIDED_OPTIONS param suggests SET_ATTITUDE_TARGET's "thrust" field should be interpreted as thrust instead of climb rate
+    // returns true if HITTARGET_OPTIONS param suggests SET_ATTITUDE_TARGET's "thrust" field should be interpreted as thrust instead of climb rate
     bool set_attitude_target_provides_thrust() const;
     bool stabilizing_pos_xy() const;
     bool stabilizing_vel_xy() const;
@@ -1140,16 +1140,16 @@ public:
     void angle_control_start();
     void angle_control_run();
     
-    // return guided mode timeout in milliseconds. Only used for velocity, acceleration, angle control, and angular rate control
+    // return hittarget mode timeout in milliseconds. Only used for velocity, acceleration, angle control, and angular rate control
     uint32_t get_timeout_ms() const;
     
     bool use_pilot_yaw() const override;
     
-    // pause continue in guided mode
+    // pause continue in hittarget mode
     bool pause() override;
     bool resume() override;
     
-    // true if weathervaning is allowed in guided
+    // true if weathervaning is allowed in hittarget
 #if WEATHERVANE_ENABLED
     bool allows_weathervaning(void) const override;
 #endif
@@ -1177,7 +1177,7 @@ private:
         AllowWeatherVaning = (1U << 7)
     };
     
-    // returns true if the Guided-mode-option is set (see GUID_OPTIONS)
+    // returns true if the HitTarget-mode-option is set (see GUID_OPTIONS)
     bool option_is_enabled(Option option) const;
     
     // wp controller
@@ -1202,7 +1202,7 @@ private:
     static bool send_notification;     // used to send one time notification to ground station
     static bool takeoff_complete;      // true once takeoff has completed (used to trigger retracting of landing gear)
     
-    // guided mode is paused or not
+    // hittarget mode is paused or not
     static bool _paused;
 };
 ///////////////////////////////////////////////////////////////////////////
@@ -1292,7 +1292,7 @@ public:
     };
 
     SubMode submode() const { return guided_mode; }
-
+    
     void angle_control_start();
     void angle_control_run();
 

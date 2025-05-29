@@ -652,7 +652,6 @@ public:
     AP_Int32 hit_target_options;
 #endif
 
-    AP_Float fs_gcs_timeout;
 #if MODE_RTL_ENABLED
     AP_Int32 rtl_options;
 #endif
@@ -661,6 +660,10 @@ public:
 
 #if AP_RANGEFINDER_ENABLED
     AP_Float rangefinder_filt;
+#endif
+
+#if MODE_HITTARGET_ENABLED
+    AP_Float hit_target_timeout;
 #endif
 
 #if MODE_GUIDED_ENABLED

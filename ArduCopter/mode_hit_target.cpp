@@ -1,7 +1,7 @@
 #include "Copter.h"
 
 #if MODE_HITTARGET_ENABLED
-
+ 
 /* 
  * Init and run calls for guided flight mode
 */
@@ -43,6 +43,7 @@ bool ModeHitTarget::_paused;
 // init - initialise guided controller
 bool ModeHitTarget::init(bool ignore_checks)
 {
+    hal.console->begin(115200);
     // start in velaccel control mode
     velaccel_control_start();
     hit_target_vel_target_cms.zero();
@@ -59,6 +60,8 @@ bool ModeHitTarget::init(bool ignore_checks)
 // should be called at 100hz or more
 void ModeHitTarget::run()
 {
+    //hal.console->printf("Starting RCInput test\n");
+    //hal.scheduler->delay(500);
     // run pause control if the vehicle is paused
     if (_paused) {
         pause_control_run();
@@ -317,7 +320,7 @@ bool ModeHitTarget::set_speed_down(float speed_down_cms)
 void ModeHitTarget::angle_control_start()
 {
     // set guided_mode to velocity controller
-    _mode = SubMode::Angle;
+    hit_target_mode = SubMode::Angle;
 
     // set vertical speed and acceleration limits
     pos_control->set_max_speed_accel_U_cm(wp_nav->get_default_speed_down_cms(), wp_nav->get_default_speed_up_cms(), wp_nav->get_accel_U_cmss());
@@ -367,7 +370,7 @@ bool ModeHitTarget::set_destination(const Vector3f& destination, bool use_yaw, f
 
 #if HAL_LOGGING_ENABLED
         // log target
-        copter.Log_Write_Guided_Position_Target(hit_target_mode, destination, terrain_alt, Vector3f(), Vector3f());
+        copter.Log_Write_Hit_Target_Position_Target(hit_target_mode, destination, terrain_alt, Vector3f(), Vector3f());
 #endif
         send_notification = true;
         return true;
@@ -409,7 +412,7 @@ bool ModeHitTarget::set_destination(const Vector3f& destination, bool use_yaw, f
 
 #if HAL_LOGGING_ENABLED
     // log target
-    copter.Log_Write_Guided_Position_Target(hit_target_mode, hit_target_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
+    copter.Log_Write_Hit_Target_Position_Target(hit_target_mode, hit_target_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
 #endif
 
     send_notification = true;
@@ -469,7 +472,7 @@ bool ModeHitTarget::set_destination(const Location& dest_loc, bool use_yaw, floa
 
 #if HAL_LOGGING_ENABLED
         // log target
-        copter.Log_Write_Guided_Position_Target(hit_target_mode, Vector3f(dest_loc.lat, dest_loc.lng, dest_loc.alt), (dest_loc.get_alt_frame() == Location::AltFrame::ABOVE_TERRAIN), Vector3f(), Vector3f());
+        copter.Log_Write_Hit_Target_Position_Target(hit_target_mode, Vector3f(dest_loc.lat, dest_loc.lng, dest_loc.alt), (dest_loc.get_alt_frame() == Location::AltFrame::ABOVE_TERRAIN), Vector3f(), Vector3f());
 #endif
 
         send_notification = true;
@@ -518,7 +521,7 @@ bool ModeHitTarget::set_destination(const Location& dest_loc, bool use_yaw, floa
 
     // log target
 #if HAL_LOGGING_ENABLED
-    copter.Log_Write_Guided_Position_Target(hit_target_mode, Vector3f(dest_loc.lat, dest_loc.lng, dest_loc.alt), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
+    copter.Log_Write_Hit_Target_Position_Target(hit_target_mode, Vector3f(dest_loc.lat, dest_loc.lng, dest_loc.alt), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
 #endif
 
     send_notification = true;
@@ -547,7 +550,7 @@ void ModeHitTarget::set_accel(const Vector3f& acceleration, bool use_yaw, float 
 #if HAL_LOGGING_ENABLED
     // log target
     if (log_request) {
-        copter.Log_Write_Guided_Position_Target(hit_target_mode, hit_target_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
+        copter.Log_Write_Hit_Target_Position_Target(hit_target_mode, hit_target_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
     }
 #endif
 }
@@ -579,7 +582,7 @@ void ModeHitTarget::set_velaccel(const Vector3f& velocity, const Vector3f& accel
 #if HAL_LOGGING_ENABLED
     // log target
     if (log_request) {
-        copter.Log_Write_Guided_Position_Target(hit_target_mode, hit_target_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
+        copter.Log_Write_Hit_Target_Position_Target(hit_target_mode, hit_target_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
     }
 #endif
 }
@@ -619,7 +622,7 @@ bool ModeHitTarget::set_destination_posvelaccel(const Vector3f& destination, con
 
 #if HAL_LOGGING_ENABLED
     // log target
-    copter.Log_Write_Guided_Position_Target(hit_target_mode, guided_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
+    copter.Log_Write_Hit_Target_Position_Target(hit_target_mode, hit_target_pos_target_cm.tofloat(), hit_target_pos_terrain_alt, hit_target_vel_target_cms, hit_target_accel_target_cmss);
 #endif
     return true;
 }
@@ -685,7 +688,7 @@ void ModeHitTarget::set_angle(const Quaternion &attitude_quat, const Vector3f &a
 
 #if HAL_LOGGING_ENABLED
     // log target
-    copter.Log_Write_Guided_Attitude_Target(hit_target_mode, roll_rad, pitch_rad, yaw_rad, ang_vel_body, hit_target_angle_state.thrust, hit_target_angle_state.climb_rate_cms * 0.01);
+    copter.Log_Write_Hit_Target_Attitude_Target(hit_target_mode, roll_rad, pitch_rad, yaw_rad, ang_vel_body, hit_target_angle_state.thrust, hit_target_angle_state.climb_rate_cms * 0.01);
 #endif
 }   
 
@@ -825,7 +828,7 @@ void ModeHitTarget::velaccel_control_run()
     bool do_avoid = false;
 #if AP_AVOIDANCE_ENABLED
     // limit the velocity for obstacle/fence avoidance
-    copter.avoid.adjust_velocityhit_target_vel_target_cms, pos_control->get_pos_NE_p().kP(), pos_control->get_max_accel_NE_cmss(), pos_control->get_pos_U_p().kP(), pos_control->get_max_accel_U_cmss(), G_Dt);
+    copter.avoid.adjust_velocity(hit_target_vel_target_cms, pos_control->get_pos_NE_p().kP(), pos_control->get_max_accel_NE_cmss(), pos_control->get_pos_U_p().kP(), pos_control->get_max_accel_U_cmss(), G_Dt);
     do_avoid = copter.avoid.limits_active();
 #endif
 
@@ -843,7 +846,7 @@ void ModeHitTarget::velaccel_control_run()
         // set position errors to zero
         pos_control->stop_pos_NE_stabilisation();
     }
-    pos_control->input_vel_accel_U_cmhit_target_vel_target_cms.z,hit_target_accel_target_cmss.z, false);
+    pos_control->input_vel_accel_U_cm(hit_target_vel_target_cms.z,hit_target_accel_target_cmss.z, false);
 
     // call velocity controller which includes z axis controller
     pos_control->update_NE_controller();
@@ -932,7 +935,7 @@ void ModeHitTarget::posvelaccel_control_run()
 
     float pz = hit_target_pos_target_cm.z;
     pos_control->input_pos_vel_accel_U_cm(pz, hit_target_vel_target_cms.z, hit_target_accel_target_cmss.z, false);
-    guided_pos_target_cm.z = pz;
+    hit_target_pos_target_cm.z = pz;
 
     // run position controllers
     pos_control->update_NE_controller();
