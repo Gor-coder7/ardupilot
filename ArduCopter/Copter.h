@@ -1059,10 +1059,10 @@ private:
 #endif
 #if MODE_GUIDED_ENABLED
     ModeGuided mode_guided;
+#endif
 #if AP_SCRIPTING_ENABLED
     // Custom modes registered at runtime
     ModeGuidedCustom *mode_guided_custom[5];
-#endif
 #endif
     ModeLand mode_land;
 #if MODE_LOITER_ENABLED
@@ -1119,6 +1119,7 @@ private:
 
 public:
     void failsafe_check();      // failsafe.cpp
+    
 };
 
 extern Copter copter;

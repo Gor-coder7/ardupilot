@@ -744,11 +744,19 @@ void ModeGuided::pos_control_run()
         pos_offset_z_buffer = MIN(copter.wp_nav->get_terrain_margin_m() * 100.0, 0.5 * fabsF(guided_pos_target_cm.z));
     }
     pos_control->input_pos_NEU_cm(guided_pos_target_cm, terr_offset, pos_offset_z_buffer);
+    
+    
+    Vector3f curr_pos = inertial_nav.get_position_neu_cm();
+    Vector3f target_vec = guided_pos_target_cm.tofloat() - curr_pos;
+    Vector3f desired_vel;
+    desired_vel = target_vec.normalized() * 2000;
+    pos_control->input_vel_accel_NE_cm(desired_vel.xy(), Vector2f(), false);
+    pos_control->input_vel_accel_U_cm(desired_vel.z, 0, false);
+    
 
-    // run position controllers
+
     pos_control->update_NE_controller();
     pos_control->update_U_controller();
-
     // call attitude controller with auto yaw
     attitude_control->input_thrust_vector_heading_cd(pos_control->get_thrust_vector(), auto_yaw.get_heading());
 }
@@ -1186,5 +1194,4 @@ bool ModeGuided::resume()
     _paused = false;
     return true;
 }
-
 #endif

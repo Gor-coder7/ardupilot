@@ -138,6 +138,8 @@ public:
     virtual bool allows_flip() const { return false; }
     virtual bool crash_check_enabled() const { return true; }
 
+    virtual bool is_guided_mode() const { return true; }
+
 #if AP_COPTER_ADVANCED_FAILSAFE_ENABLED
     // Return the type of this mode for use by advanced failsafe
     virtual AP_AdvancedFailsafe_Copter::control_mode afs_mode() const { return AP_AdvancedFailsafe_Copter::control_mode::AFS_STABILIZED; }
@@ -1049,7 +1051,8 @@ private:
     uint32_t last_stick_input_ms;
 };
 #endif // MODE_FLOWHOLD_ENABLED
-
+/*
+#if MODE_HITTARGET_ENABLED
 
 class ModeHitTarget : public Mode {
 
@@ -1116,14 +1119,10 @@ public:
     bool limit_check();
     
     bool is_taking_off() const override;
-        
+    
     bool set_speed_xy(float speed_xy_cms) override;
     bool set_speed_up(float speed_up_cms) override;
     bool set_speed_down(float speed_down_cms) override;
-    
-    // initialises position controller to implement take-off
-    // takeoff_alt_cm is interpreted as alt-above-home (in cm) or alt-above-terrain if a rangefinder is available
-    bool do_user_takeoff_start(float takeoff_alt_cm) override;
 
     enum class SubMode {
         TakeOff,
@@ -1134,6 +1133,10 @@ public:
         Accel,
         Angle,
     };
+
+    // initialises position controller to implement take-off
+    // takeoff_alt_cm is interpreted as alt-above-home (in cm) or alt-above-terrain if a rangefinder is available
+    bool do_user_takeoff_start(float takeoff_alt_cm) override;
     
     SubMode submode() const { return hit_target_mode; }
     
@@ -1201,10 +1204,11 @@ private:
     static SubMode hit_target_mode;
     static bool send_notification;     // used to send one time notification to ground station
     static bool takeoff_complete;      // true once takeoff has completed (used to trigger retracting of landing gear)
-    
+
     // hittarget mode is paused or not
     static bool _paused;
 };
+#endif*/
 ///////////////////////////////////////////////////////////////////////////
 class ModeGuided : public Mode {
 
@@ -1408,7 +1412,27 @@ protected:
 private:
 
 };
+//////////////////////////
+class ModeHitTarget : public ModeGuided {
 
+public:
+    using ModeGuided::ModeGuided;
+    Number mode_number() const override { return Number::HITTARGET; }
+
+    bool init(bool ignore_checks) override;
+    void run() override;
+
+    bool requires_GPS() const override { return false; }
+    bool has_manual_throttle() const override { return false; }
+    bool is_autopilot() const override { return true; }
+
+    bool is_guided_mode() const override { return true; }
+
+    const char *name() const override { return "HITTARGET"; }
+    const char *name4() const override { return "HITT"; }
+
+private:
+};
 
 class ModeLand : public Mode {
 
