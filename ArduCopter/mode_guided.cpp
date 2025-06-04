@@ -43,12 +43,12 @@ bool ModeGuided::_paused;
 // init - initialise guided controller
 bool ModeGuided::init(bool ignore_checks)
 {
+    hal.console->begin(115200);
     // start in velaccel control mode
     velaccel_control_start();
     guided_vel_target_cms.zero();
     guided_accel_target_cmss.zero();
     send_notification = false;
-
     // clear pause state when entering guided mode
     _paused = false;
 
@@ -71,6 +71,8 @@ void ModeGuided::run()
     case SubMode::TakeOff:
         // run takeoff controller
         takeoff_run();
+        //hal.console->printf("Takeoff \n");
+        copter.guided_submode = 0;
         break;
 
     case SubMode::WP:
@@ -80,29 +82,43 @@ void ModeGuided::run()
             send_notification = false;
             gcs().send_mission_item_reached_message(0);
         }
+        //hal.console->printf("WP \n");
+        copter.guided_submode = 1;
         break;
 
     case SubMode::Pos:
         // run position controller
         pos_control_run();
+        //hal.console->printf("Pos \n");
+        copter.guided_submode = 2;
         break;
 
     case SubMode::Accel:
         accel_control_run();
+        //hal.console->printf("Accel \n");
+        copter.guided_submode = 3;
         break;
 
     case SubMode::VelAccel:
         velaccel_control_run();
+        //hal.console->printf("VelAccel \n");
+        copter.guided_submode = 4;
         break;
 
     case SubMode::PosVelAccel:
         posvelaccel_control_run();
+        //hal.console->printf("PosVelAccel \n");
+        copter.guided_submode = 5;
         break;
 
     case SubMode::Angle:
         angle_control_run();
+        //hal.console->printf("Angle \n");
+        copter.guided_submode = 6;
         break;
     }
+    Vector3f target_vec = guided_pos_target_cm.tofloat();
+    copter.target_v = target_vec;
  }
 
 // returns true if the Guided-mode-option is set (see GUID_OPTIONS)
@@ -745,16 +761,18 @@ void ModeGuided::pos_control_run()
     }
     pos_control->input_pos_NEU_cm(guided_pos_target_cm, terr_offset, pos_offset_z_buffer);
     
-    
+    /*
     Vector3f curr_pos = inertial_nav.get_position_neu_cm();
     Vector3f target_vec = guided_pos_target_cm.tofloat() - curr_pos;
     Vector3f desired_vel;
     desired_vel = target_vec.normalized() * 2000;
     pos_control->input_vel_accel_NE_cm(desired_vel.xy(), Vector2f(), false);
     pos_control->input_vel_accel_U_cm(desired_vel.z, 0, false);
+    */
     
-
-
+    //Vector3f target_vec = guided_pos_target_cm.tofloat();
+    //hal.console->printf("Position: x=%.2f y=%.2f z=%.2f\n", target_vec.x, target_vec.y, target_vec.z);
+    //1234
     pos_control->update_NE_controller();
     pos_control->update_U_controller();
     // call attitude controller with auto yaw
